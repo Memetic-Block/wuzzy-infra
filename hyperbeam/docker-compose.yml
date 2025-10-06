@@ -1,0 +1,28 @@
+volumes:
+  hyperbeam:
+    driver: local
+
+services:
+  hyperbeam:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: permaweb/hyperbeam:edge
+    command: rebar3 as genesis_wasm shell
+    ports:
+      - "8734:8734"
+    volumes:
+      - hyperbeam:/app/cache-mainnet
+      - ./config.flat:/app/config.flat
+      - ${WALLET_FILE}:/app/wallet.json
+  hyperbeam-ephemeral:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: permaweb/hyperbeam:edge
+    command: rebar3 as genesis_wasm shell
+    ports:
+      - "8734:8734"
+    volumes:
+      - ./config.flat:/app/config.flat
+      - ${WALLET_FILE}:/app/wallet.json
