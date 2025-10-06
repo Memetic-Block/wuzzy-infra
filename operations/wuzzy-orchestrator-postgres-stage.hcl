@@ -1,8 +1,8 @@
-job "wuzzy-tx-oracle-postgres" {
+job "wuzzy-orchestrator-postgres-stage" {
   datacenters = [ "mb-hel" ]
   type = "service"
 
-  group "wuzzy-tx-oracle-postgres-group" {
+  group "wuzzy-orchestrator-postgres-stage-group" {
     count = 1
 
     network {
@@ -12,39 +12,39 @@ job "wuzzy-tx-oracle-postgres" {
       }
     }
 
-    volume "wuzzy-tx-oracle-postgres" {
+    volume "wuzzy-orchestrator-postgres-stage" {
       type      = "host"
       read_only = false
-      source    = "wuzzy-tx-oracle-postgres"
+      source    = "wuzzy-orchestrator-postgres-stage"
     }
 
-    task "wuzzy-tx-oracle-postgres-task" {
+    task "wuzzy-orchestrator-postgres-stage-task" {
       driver = "docker"
 
       config {
-        image = "postgres:17.2"
+        image = "postgres:18"
         args = [ "-c", "listen_addresses=*" ]
       }
 
       volume_mount {
-        volume = "wuzzy-tx-oracle-postgres"
-        destination = "/var/lib/postgresql/data"
+        volume = "wuzzy-orchestrator-postgres-stage"
+        destination = "/var/lib/postgresql/18/docker"
         read_only = false
       }
 
       env {
-        POSTGRES_DB = "wuzzy-tx-oracle"
+        POSTGRES_DB = "wuzzy-orchestrator-stage"
         PGPORT      = "${NOMAD_PORT_postgres}"
       }
 
-      vault { policies = [ "wuzzy-tx-oracle" ] }
+      vault { policies = [ "wuzzy-orchestrator-stage" ] }
 
       template {
         data = <<-EOF
-        {{ with secret "kv/wuzzy/tx-oracle" }}
+        {{- with secret "kv/wuzzy/orchestrator-stage" }}
         POSTGRES_USER     = "{{ .Data.data.DB_USER }}"
         POSTGRES_PASSWORD = "{{ .Data.data.DB_PASSWORD }}"
-        {{ end }}
+        {{- end }}
         EOF
         destination = "secrets/config.env"
         env = true
@@ -56,7 +56,7 @@ job "wuzzy-tx-oracle-postgres" {
       }
 
       service {
-        name = "wuzzy-tx-oracle-postgres"
+        name = "wuzzy-orchestrator-postgres-stage"
         port = "postgres"
 
         check {

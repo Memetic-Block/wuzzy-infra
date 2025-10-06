@@ -256,7 +256,7 @@ services:
     ports:
       - ${DB_PORT}:5432
     volumes:
-      - postgresdata:/var/lib/postgresql/data
+      - postgresdata:/var/lib/postgresql/18/docker
 
 volumes:
   certs:

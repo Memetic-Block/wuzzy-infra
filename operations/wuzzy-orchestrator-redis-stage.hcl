@@ -1,14 +1,14 @@
-job "wuzzy-tx-oracle-redis" {
-  datacenters = ["mb-hel"]
+job "wuzzy-orchestrator-redis-stage" {
+  datacenters = [ "mb-hel" ]
   type = "service"
 
-  group "wuzzy-tx-oracle-redis-group" {
+  group "wuzzy-orchestrator-redis-stage-group" {
     count = 1
 
-    volume "wuzzy-tx-oracle-redis" {
+    volume "wuzzy-orchestrator-redis-stage" {
       type = "host"
       read_only = false
-      source = "wuzzy-tx-oracle-redis"
+      source = "wuzzy-orchestrator-redis-stage"
     }
 
     network {
@@ -18,7 +18,7 @@ job "wuzzy-tx-oracle-redis" {
       }
     }
 
-    task "wuzzy-tx-oracle-redis" {
+    task "wuzzy-orchestrator-redis-stage" {
       driver = "docker"
       config {
         image = "redis:7.2"
@@ -31,7 +31,7 @@ job "wuzzy-tx-oracle-redis" {
       }
 
       volume_mount {
-        volume = "wuzzy-tx-oracle-redis"
+        volume = "wuzzy-orchestrator-redis-stage"
         destination = "/data"
         read_only = false
       }
@@ -42,11 +42,11 @@ job "wuzzy-tx-oracle-redis" {
       }
 
       service {
-        name = "wuzzy-tx-oracle-redis"
+        name = "wuzzy-orchestrator-redis-stage"
         port = "redis"
         
         check {
-          name     = "wuzzy-tx-oracle-redis-check"
+          name     = "wuzzy-orchestrator-redis-stage-check"
           type     = "tcp"
           interval = "5s"
           timeout  = "10s"
