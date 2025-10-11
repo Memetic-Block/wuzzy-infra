@@ -63,11 +63,23 @@ job "wuzzy-crawler-stage" {
 
       template {
         data = <<-EOF
+        {{- range service "wuzzy-orchestrator-stage" }}
+        WUZZY_ORCHESTRATOR_HOST="{{ .Address }}:{{ .Port }}"
+        {{- end }}
+        EOF
+        env = true
+        destination = "local/config.env"
+      }
+
+      template {
+        data = <<-EOF
         #!/bin/sh
+
+        wget -O /tmp/crawl-config-domains.yml "http://${WUZZY_ORCHESTRATOR_HOST}/crawler-config-domains.yml"
 
         cat \
           /config/crawler-base-config.yml \
-          /wuzzy-crawler-stage/crawl-config-domains.yml > crawler.yml
+          /tmp/crawl-config-domains.yml > crawler.yml
 
         jruby -J-Xmx8192M bin/crawler crawl crawler.yml
         EOF
