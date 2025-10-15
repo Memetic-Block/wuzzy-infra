@@ -45,7 +45,8 @@ job "wuzzy-crawler-stage" {
       template {
         data = <<-EOF
         output_sink: elasticsearch
-        output_index: permaweb-crawler-test
+        output_index: permaweb-crawler-test-10-15-2025
+        ssl_verification_mode: none # NB: disabled due to arns undernames issue
         {{ range service "wuzzy-elasticsearch-stage" }}
         elasticsearch:
           host: http://{{ .Address }}
@@ -81,7 +82,8 @@ job "wuzzy-crawler-stage" {
           /config/crawler-base-config.yml \
           /tmp/crawl-config-domains.yml > crawler.yml
 
-        jruby -J-Xmx8192M bin/crawler crawl crawler.yml
+        # cat crawler.yml
+        jruby -J-Xmx16384M bin/crawler crawl crawler.yml
         EOF
         destination = "local/entrypoint.sh"
         perms = "0755"
@@ -89,7 +91,7 @@ job "wuzzy-crawler-stage" {
 
       resources {
         cpu    = 4096
-        memory = 8192
+        memory = 16384
       }
 
       restart {
