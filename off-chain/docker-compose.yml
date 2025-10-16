@@ -225,38 +225,40 @@ services:
         condition: service_healthy
       es03:
         condition: service_healthy
-    image: docker.elastic.co/integrations/crawler:latest
+    image: docker.elastic.co/integrations/crawler:0.4.0
     container_name: crawler
+    # command: ["bin/crawler", "crawl", "/app/config/crawl-config.yml"]
+    command: ["jruby", "bin/crawler", "crawl", "/app/config/crawl-config.yml"]
     volumes:
       - ./config:/app/config
     network_mode: host
     stdin_open: true
     tty: true
 
-  redis:
-    image: redis:7.2
-    container_name: redis
-    ports:
-      - ${REDIS_PORT}:6379
-    volumes:
-      - redisdata:/data
-    command: [ "redis-server" ]
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # redis:
+  #   image: redis:7.2
+  #   container_name: redis
+  #   ports:
+  #     - ${REDIS_PORT}:6379
+  #   volumes:
+  #     - redisdata:/data
+  #   command: [ "redis-server" ]
+  #   healthcheck:
+  #     test: [ "CMD", "redis-cli", "ping" ]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-  postgres:
-    image: postgres:18
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    ports:
-      - ${DB_PORT}:5432
-    volumes:
-      - postgresdata:/var/lib/postgresql/18/docker
+  # postgres:
+  #   image: postgres:18
+  #   environment:
+  #     POSTGRES_USER: ${DB_USERNAME}
+  #     POSTGRES_PASSWORD: ${DB_PASSWORD}
+  #     POSTGRES_DB: ${DB_NAME}
+  #   ports:
+  #     - ${DB_PORT}:5432
+  #   volumes:
+  #     - postgresdata:/var/lib/postgresql/18/docker
 
 volumes:
   certs:
@@ -269,7 +271,7 @@ volumes:
     driver: local
   kibanadata:
     driver: local
-  redisdata:
-    driver: local
-  postgresdata:
-    driver: local
+  # redisdata:
+  #   driver: local
+  # postgresdata:
+  #   driver: local
