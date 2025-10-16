@@ -2,6 +2,11 @@ job "wuzzy-crawler-stage" {
   datacenters = [ "mb-hel" ]
   type = "batch"
 
+  periodic {
+    crons             = [ "@daily" ]
+    prohibit_overlap = true
+  }
+
   reschedule { attempts = 0 }
 
   constraint {
@@ -45,7 +50,7 @@ job "wuzzy-crawler-stage" {
       template {
         data = <<-EOF
         output_sink: elasticsearch
-        output_index: permaweb-crawler-test-10-15-2025
+        output_index: permaweb-crawler
         ssl_verification_mode: none # NB: disabled due to arns undernames issue
         {{ range service "wuzzy-elasticsearch-stage" }}
         elasticsearch:
@@ -76,13 +81,19 @@ job "wuzzy-crawler-stage" {
         data = <<-EOF
         #!/bin/sh
 
-        wget -O /tmp/crawl-config-domains.yml "http://${WUZZY_ORCHESTRATOR_HOST}/crawler-config-domains.yml"
+        wget -O /tmp/crawl-config-domains.yml \
+          "http://${WUZZY_ORCHESTRATOR_HOST}/crawler-config-domains.yml"
+
+        sed \
+          "s/output_index: permaweb-crawler/output_index: permaweb-crawler-$(date +%Y-%m-%d)/" \
+          /config/crawler-base-config.yml > /tmp/crawler-base-config-daily.yml
 
         cat \
-          /config/crawler-base-config.yml \
+          /tmp/crawler-base-config-daily.yml \
           /tmp/crawl-config-domains.yml > crawler.yml
 
         # cat crawler.yml
+        # cat /tmp/crawler-base-config-daily.yml
         jruby -J-Xmx16384M bin/crawler crawl crawler.yml
         EOF
         destination = "local/entrypoint.sh"
