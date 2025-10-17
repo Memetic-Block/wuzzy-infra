@@ -28,7 +28,7 @@ job "wuzzy-crawler-stage" {
       driver = "docker"
 
       config {
-        image = "docker.elastic.co/integrations/crawler:0.4.0"
+        image = "docker.elastic.co/integrations/crawler:0.4.2"
         volumes = [
           "local/crawler-base-config.yml:/config/crawler-base-config.yml"
         ]
