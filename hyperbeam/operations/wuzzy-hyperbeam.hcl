@@ -76,8 +76,7 @@ job "wuzzy-hyperbeam" {
           "traefik.http.routers.wuzzy-hyperbeam.entrypoints=https",
           "traefik.http.routers.wuzzy-hyperbeam.tls=true",
           "traefik.http.routers.wuzzy-hyperbeam.tls.certresolver=memetic-block",
-          "traefik.http.routers.wuzzy-hyperbeam.rule=Host(`wuzzy-hyperbeam.hel.memeticblock.net`)",
-          "traefik.http.routers.wuzzy-hyperbeam.middlewares=wuzzy-kibana-stage-corsheaders@consulcatalog"
+          "traefik.http.routers.wuzzy-hyperbeam.rule=Host(`wuzzy-hyperbeam.hel.memeticblock.net`)"
         ]
 
         check {
