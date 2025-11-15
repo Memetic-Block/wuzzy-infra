@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
       - name: Build image
         run: |
-          cd hyperbeam
+          cd opensearch
           docker build . \
             --tag $IMAGE_NAME \
             --label "runnumber=${GITHUB_RUN_ID}" \
