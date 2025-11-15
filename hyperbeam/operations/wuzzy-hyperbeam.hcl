@@ -41,8 +41,8 @@ job "wuzzy-hyperbeam" {
       }
 
       resources {
-        cpu = 32768
-        memory = 32768
+        cpu = 16384
+        memory = 16384
       }
 
       template {

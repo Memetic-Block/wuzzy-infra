@@ -10,7 +10,7 @@ services:
     ports:
       - "8734:8734"
     volumes:
-      - hyperbeam:/app/cache-mainnet
+      - hyperbeam-edge:/app/cache-mainnet
       - ./config.flat:/app/config.flat
       - ${WALLET_FILE}:/app/wallet.json
   hyperbeam-edge-ephemeral:
@@ -30,12 +30,18 @@ services:
       dockerfile: Dockerfile
     image: permaweb/hyperbeam:v0.9-milestone-3-beta-3
     command: rebar3 as genesis_wasm shell
+    environment:
+      - HB_GATEWAY="https://frostor.xyz"
+    # entrypoint: ["/app/entrypoint.sh"]
     ports:
+      # - "10000:10000"
       - "8734:8734"
     volumes:
-      - hyperbeam:/app/cache-mainnet
+      - hyperbeam-beta3:/app/cache-mainnet
       - ./config.flat:/app/config.flat
       - ${WALLET_FILE}:/app/wallet.json
+      # - ${WALLET_FILE}:/app/hyperbeam-key.json
+      # - ./docker-compose-entrypoint.sh:/app/entrypoint.sh
   hyperbeam-beta3-ephemeral:
     build:
       context: .
@@ -49,5 +55,7 @@ services:
       - ${WALLET_FILE}:/app/wallet.json
 
 volumes:
-  hyperbeam:
+  hyperbeam-edge:
+    driver: local
+  hyperbeam-beta3:
     driver: local
