@@ -1,0 +1,95 @@
+name: wuzzy-crawler
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.1.5
+    container_name: wuzzy-crawler-elasticsearch
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=wuzzy-crawler-local
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "${ES_PORT:-9201}:9200"
+    networks:
+      - crawler-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.1.5
+    container_name: wuzzy-crawler-kibana
+    environment:
+      - SERVER_NAME=wuzzy-kibana-local
+      - SERVER_PORT=5601
+      - SERVER_HOST=0.0.0.0
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "${KIBANA_PORT:-5600}:5601"
+    networks:
+      - crawler-net
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  crawler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wuzzy-crawler
+    volumes:
+      - ./config:/config:ro
+      - ./docker-compose-entrypoint.sh:/workdir/entrypoint.sh:ro
+    entrypoint: ["/workdir/entrypoint.sh"]
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+    networks:
+      - crawler-net
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    profiles:
+      - manual
+
+  elasticsearch-dump:
+    image: elasticdump/elasticsearch-dump:v6.124.1
+    container_name: wuzzy-elasticsearch-dump
+    command: >
+      --input=http://elasticsearch:9200/${ES_INDEX:-permaweb-crawler-local}
+      --output=http://${OPENSEARCH_HOST:-host.docker.internal}:${OPENSEARCH_PORT:-9200}/${ES_INDEX:-permaweb-crawler-local}
+      --type=${DUMP_TYPE:-data}
+    environment:
+      - OPENSEARCH_HOST=${OPENSEARCH_HOST:-host.docker.internal}
+      - OPENSEARCH_PORT=${OPENSEARCH_PORT:-9200}
+      - ES_INDEX=${ES_INDEX:-permaweb-crawler-local}
+      - DUMP_TYPE=${DUMP_TYPE:-data}
+    networks:
+      - crawler-net
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    profiles:
+      - manual
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  crawler-net:
+    driver: bridge
